@@ -1,0 +1,10 @@
+{
+    "displayName": "#[CHANNEL-NAME]",
+    "labels": {
+      "channel_name": "#[CHANNEL-NAME]",
+      "auth_token": "[slack_token]"
+    },
+    "type": "slack",
+    "description": "Slack channel to send stackdriver notifications to. This channel will be ignored by us, but will only be read by dollhouse-bot to be processed",
+    "enabled": true
+  }

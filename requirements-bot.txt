@@ -1,0 +1,4 @@
+slackclient
+netaddr
+elasticsearch
+ConfigParser
