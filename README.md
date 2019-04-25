@@ -40,17 +40,17 @@ optional arguments:
 To run the audit, you can choose what you want to check (Firewall, IAM) by adding the required arguments
 This script can be run on your local machine with your own user. It will fetch the projects that your account has access to. Ideally you should create an account/serviceaccount which has organisation level viewer access so that it becomes easier to run on all the projects.
 ```
-python dollhouse.py --account youremail@email.com --firewall --iam
+python dollhouse-audit.py --account youremail@email.com --firewall --iam
 ```
 You can also query specific firewall name on a specific project
 ```
-python dollhouse.py --account youremail@email.com --project myProject --firewall_name myfirewallName
+python dollhouse-audit.py --account youremail@email.com --project myProject --firewall_name myfirewallName
 ```
 
 ### ElasticSearch Support
 Results can be pushed to ElasticSearch for data storing
 ```
-python dollhouse.py --account myName@email.com --firewall --iam --ES 127.0.0.1
+python dollhouse-audit.py --account myName@email.com --firewall --iam --ES 127.0.0.1
 ```
 ------------------------------
 
