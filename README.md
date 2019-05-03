@@ -145,6 +145,6 @@ To run dollhouse-bot, you can simply do
 ### Future Plans for Dollhouse:
 ------------------------------
 
-- [ ] We continously trying to improve on the code quality of the tool to make it more modular and maintainable.
+- [ ] We continuously trying to improve on the code quality of the tool to make it more modular and maintainable.
 - [ ] Adding support on *GCS bucket* 
 - [ ] Whitelisting/Blacklisting alert rules from slack
