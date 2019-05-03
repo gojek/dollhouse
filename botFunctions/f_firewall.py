@@ -65,7 +65,7 @@ def check_whitelisted_ports(ports_list):
 
 def firewall_describe_command(command,running_account):
     print "Firewall describe command found"
-    response = os.popen("python dollhouse.py --account " + running_account + " --firewall --project "+ command.split()[4] + " --firewall_name " + command.split()[2]).read()
+    response = os.popen("python dollhouse-audit.py --account " + running_account + " --firewall --project "+ command.split()[4] + " --firewall_name " + command.split()[2]).read()
     return response
 
 

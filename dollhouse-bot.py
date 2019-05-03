@@ -105,13 +105,13 @@ def handle_command(project_name, alert_threshold, operation_type, alert_type):
 def handle_os_command(command,msg_timestamp,channel):
     response = None
     if command.startswith(FIREWALL_DESCRIBE_COMMAND):
-        f_firewall.firewall_describe_command(command, running_account)
+        response = f_firewall.firewall_describe_command(command, running_account)
     elif command.startswith(IAM_ROLE_DESCRIBE_COMMAND):
-        f_iam.iam_show_command(command)
+        response = f_iam.iam_show_command(command)
     elif command.startswith(SERVICEACCONT_IDENTIFY_COMMAND):
-        f_serviceAccount.serviceAccount_identify_command(command)
+        response = f_serviceAccount.serviceAccount_identify_command(command)
     elif command.startswith(HELP_COMMAND):
-        f_operations.dollhouse_bot_help()  
+        response = f_operations.dollhouse_bot_help()  
         
     # Sends the response back to the channel
     slack_client.api_call("chat.postMessage", channel=slack_channel, thread_ts = msg_timestamp, text = response)
