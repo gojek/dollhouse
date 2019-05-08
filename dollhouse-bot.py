@@ -232,7 +232,8 @@ def get_operations(project_name, NUM_OF_INCIDENTS, operation_type, alert_type):
 
     elif alert_type == 'deleteKey':
         print('[*] DEBUG: deleteKey')
-        raw_operations = f_operations.get_deleteKey_raw_operations(NUM_OF_INCIDENTS)
+        #raw_operations = f_operations.get_deleteKey_raw_operations(NUM_OF_INCIDENTS)
+        raw_operations = os.popen("gcloud logging read \"resource.type=\"service_account\" AND protoPayload.serviceName=\"iam.googleapis.com\" AND protoPayload.methodName=\"google.iam.admin.v1.DeleteServiceAccountKey\"\" --format=json --limit="+str(NUM_OF_INCIDENTS)).read()
         json_raw_operations = json.loads(raw_operations)
 
         for ops in json_raw_operations:
