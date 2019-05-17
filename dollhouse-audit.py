@@ -7,13 +7,15 @@ import requests
 import datetime
 from tabulate import tabulate
 import time
-
+from auditFunctions import f_storage
+import pdb
 
 parser = argparse.ArgumentParser(description='GCP Audit Tool')
 parser.add_argument("--account", dest="account", help="account to run this tool with -> ex: youremail@gmail.com")
 parser.add_argument("--es", dest="elasticsearch", help="formats to json and pushes to elastic search", required=False)
 parser.add_argument("--firewall", help="run firewall rules check",required=False, action='store_true')
 parser.add_argument("--iam", help="run IAM Users & Service Accounts check", required=False, action='store_true')
+parser.add_argument("--bucket", help="run bucket check", required=False, action='store_true')
 parser.add_argument("--project", dest="project", help="query specific project", required=False)
 parser.add_argument("--firewall_name", dest="firewall_name", help="query specific firewall name", required=False)
 
@@ -29,9 +31,6 @@ else:
 	pass
 now = datetime.datetime.now()
 now_strftime = now.strftime("%Y-%m-%d")
-
-
-
 
 
 def get_project_list():
@@ -183,16 +182,20 @@ def get_firewall_rules():
 				if args.iam:
 					print "[*] Getting IAM Users for Project: '%s'" % (project_name)
 					time.sleep(2)
-					#iam_users = getIAMUsers(project_name)
+					iam_users = getIAMUsers(project_name)
 
 				if args.firewall:
 					print "[*] Getting firewall rules for Project: '%s'" %(project_name)
 					time.sleep(2)
 					firewall = json.loads(raw_firewall)
+					query_firewall(firewall,project_name,instances)
+				
+				if args.bucket:
+					print('[*] Getting Buckets for Project: ' + project_name)
+					time.sleep(2)
+					audit_storage(project_name)
 				else: 
 					continue
-
-				query_firewall(firewall,project_name,instances)
 				
 			except:
 				print "[-] Problem getting firewall-rules for Project: %s" % (project_name)
@@ -318,7 +321,18 @@ def query_firewall(firewall,project_name,instances):
 			continue
 
 
+def audit_storage(project_name):
+	bucket_list = os.popen('gsutil ls').read()
 
+	for item in bucket_list.split():
+		bucket_name = str(item).split('://')[1].split('/')[0]
+		print('###########################################################')
+		print('########## ' + bucket_name + ' ##########')
+		print('###########################################################')
+		logging_status = f_storage.get_logging_status(bucket_name)
+
+		list_to_tabulate = f_storage.get_bucket_iam(bucket_name)
+		print tabulate(list_to_tabulate, ["Role", "User"], tablefmt="grid")
 
 if __name__ == "__main__":
 
