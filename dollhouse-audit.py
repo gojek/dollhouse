@@ -322,6 +322,7 @@ def query_firewall(firewall,project_name,instances):
 
 
 def audit_storage(project_name):
+	os.system('gcloud config set project ' + project_name)
 	bucket_list = os.popen('gsutil ls').read()
 
 	for item in bucket_list.split():
@@ -329,9 +330,25 @@ def audit_storage(project_name):
 		print('###########################################################')
 		print('########## ' + bucket_name + ' ##########')
 		print('###########################################################')
+
 		logging_status = f_storage.get_logging_status(bucket_name)
+		if args.elasticsearch:
+			to_es = {}
+			to_es['project_name'] = project_name
+			to_es['bucket_name'] = bucket_name
+			to_es['logging_status'] = logging_status
+			es.index(index='dollhouse',doc_type='dollhouse_bucket', body=to_es)
 
 		list_to_tabulate = f_storage.get_bucket_iam(bucket_name)
+		if args.elasticsearch:
+			for item in list_to_tabulate:
+				to_es = {}
+				to_es['project_name'] = project_name
+				to_es['bucket_name'] = bucket_name
+				to_es['logging_status'] = logging_status
+				to_es['role'] = item[0]
+				to_es['user'] = item[1]
+				es.index(index='dollhouse',doc_type='dollhouse_bucket', body=to_es)
 		print tabulate(list_to_tabulate, ["Role", "User"], tablefmt="grid")
 
 if __name__ == "__main__":
