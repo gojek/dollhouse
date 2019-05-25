@@ -279,5 +279,77 @@ def iamrole(project_name, channelID):
 	os.system("gcloud alpha monitoring policies create --policy-from-file=./iamrole.json")
 	os.system("rm ./iamrole.json")
 
+
+def instanceSetTag(project_name, channelID):
+	instanceSetTag = {
+		  "displayName": "instanceSetTag",
+		  "combiner": "OR",
+		  "conditions": [
+			{
+			  "displayName": "Metric Threshold on Log Metrics",
+			  "conditionThreshold": {
+				 "aggregations": [
+				   {
+					 "alignmentPeriod": "60s",
+					 "perSeriesAligner": "ALIGN_RATE",
+				   }],
+				"comparison": "COMPARISON_GT",
+				"duration": "60s",
+				"filter": "metric.type=\"logging.googleapis.com/user/alert-instanceSetTag\" AND resource.type=\"gce_instance\"",
+				"thresholdValue": 0,
+				"trigger": {
+				  "count": 1
+				 }
+			  }
+			}
+		  ],
+		  "notificationChannels": [
+			  "projects/"+project_name+"/notificationChannels/"+channelID
+		  ]
+		}
+
+	f = open("instanceSetTag.json", "w")
+	f.write(json.dumps(instanceSetTag))
+	f.close()
+
+	os.system("gcloud alpha monitoring policies create --policy-from-file=./instanceSetTag.json")
+	os.system("rm ./instanceSetTag.json")
+
+
+def instanceAddAccessConfig(project_name, channelID):
+	instanceAddAccessConfig = {
+		  "displayName": "instanceAddAccessConfig",
+		  "combiner": "OR",
+		  "conditions": [
+			{
+			  "displayName": "Metric Threshold on Log Metrics",
+			  "conditionThreshold": {
+				 "aggregations": [
+				   {
+					 "alignmentPeriod": "60s",
+					 "perSeriesAligner": "ALIGN_RATE",
+				   }],
+				"comparison": "COMPARISON_GT",
+				"duration": "60s",
+				"filter": "metric.type=\"logging.googleapis.com/user/alert-instanceAddAccessConfig\" AND resource.type=\"gce_instance\"",
+				"thresholdValue": 0,
+				"trigger": {
+				  "count": 1
+				 }
+			  }
+			}
+		  ],
+		  "notificationChannels": [
+			  "projects/"+project_name+"/notificationChannels/"+channelID
+		  ]
+		}
+
+	f = open("instanceAddAccessConfig.json", "w")
+	f.write(json.dumps(instanceAddAccessConfig))
+	f.close()
+
+	os.system("gcloud alpha monitoring policies create --policy-from-file=./instanceAddAccessConfig.json")
+	os.system("rm ./instanceAddAccessConfig.json")
+
 def create_slack():
     os.system("gcloud alpha monitoring channels create --channel-content-from-file=./slack_notification.json")

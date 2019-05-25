@@ -48,3 +48,19 @@ def createLoggingIAM():
                     protoPayload.serviceName=\"cloudresourcemanager.googleapis.com\" AND\
                     protoPayload.methodName=\"SetIamPolicy\" AND\
                     protoPayload.serviceData.policyDelta.bindingDeltas.action=\"*\""')
+
+def createLoggingInstance():
+    # create Instance activity custom log metrics
+    os.system('gcloud beta logging metrics create alert-instanceSetTag \
+                --description="this alerts if there is any set tag activity on an instance" \
+                --log-filter="resource.type= \"gce_instance\" AND\
+                    protoPayload.serviceName=\"compute.googleapis.com\" AND\
+                    protoPayload.response.operationType=\"setTags\" AND \
+                    protoPayload.methodName=\"v1.compute.instances.setTags\""')
+
+    # create Instance activity custom log metrics
+    os.system('gcloud beta logging metrics create alert-instanceAddAccessConfig \
+                --description="this alerts if there is any add access config activity on an instance" \
+                --log-filter="resource.type= \"gce_instance\" AND\
+                    jsonPayload.event_subtype=\"compute.instances.addAccessConfig\" AND\
+                    jsonPayload.event_type=\"GCE_OPERATION_DONE\""')

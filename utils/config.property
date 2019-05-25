@@ -26,5 +26,3 @@ ports =tcp80,tcp443,tcp10256,udp5
 
 [showRoles]
 roles = roles/admin,roles/owner
-
-

@@ -22,13 +22,16 @@ RTM_READ_DELAY = int(get_value('Constants','RTM_READ_DELAY')) # 1 second delay b
 FIREWALL_DESCRIBE_COMMAND = get_value('Constants','FIREWALL_DESCRIBE_COMMAND')
 IAM_ROLE_DESCRIBE_COMMAND = get_value('Constants','IAM_ROLE_DESCRIBE_COMMAND')
 SERVICEACCONT_IDENTIFY_COMMAND = get_value('Constants','SERVICEACCONT_IDENTIFY_COMMAND')
-HELP_COMMAND= get_value('Constants','HELP_COMMAND')
+WHAT_IS_COMMAND = get_value('Constants','WHAT_IS_COMMAND')
+HELP_COMMAND = get_value('Constants','HELP_COMMAND')
 COMMAND_REGEX = get_value('Constants','COMMAND_REGEX')
 MENTION_REGEX = get_value('Constants','MENTION_REGEX') #get group 2
 PROJECT_REGEX = get_value('Constants','PROJECT_REGEX') #get group 3
 OPERATION_REGEX = get_value('Constants','OPERATION_REGEX') #get group 3
 ALERT_TYPE_REGEX = get_value('Constants','ALERT_TYPE_REGEX')
 SERVICEACCOUNT_REGEX = get_value('Constants','SERVICEACCOUNT_REGEX')
+INSTANCESETTAG_REGEX = get_value('Constants','INSTANCESETTAG_REGEX')
+INSTANCEADDACCESSCONFIG_REGEX = get_value('Constants', 'INSTANCEADDACCESSCONFIG_REGEX')
 ONE_ALERT = float(get_value('Constants','ONE_ALERT'))
 slack_channel = get_value('Constants', 'SLACK_CHANNEL')
 
@@ -54,11 +57,13 @@ def parse_bot_commands(slack_events):
                 return project_name, alert_threshold, operation_type, alert_type
         except:
             try:
-                print event
+                currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                print ("[" + currentTime + "] [*] DEBUG: " + str(event) + '\n')
                 if event["type"] == "message" and not "subtype" in event:
                     command = event["text"]  
-                    handle_os_command(command,event["ts"],event["channel"])                 
-                    print ("[*] DEBUG: command is: \n" + command)
+                    handle_os_command(command,event["ts"],event["channel"])
+                    currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")                
+                    print ("[" + currentTime + "] [*] DEBUG: command is: " + command)
                     return command,event["ts"],event["channel"],None
             except:
                 continue        
@@ -78,23 +83,42 @@ def parse_direct_mention(message_text):
     PROJECT_NAME = str(project_name.group(3)).strip()
 
     if str(alert_type.group(0)) == 'iamrole':
-        print('[*] DEBUG: iamrole')
+        currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")                
+        print('[' + currentTime + '] [*] DEBUG: iamrole')
         OPERATION_TYPE = 'iamrole'
         ALERT_TYPE = 'iamrole'
         return (PROJECT_NAME, ALERT_THRESHOLD, OPERATION_TYPE, ALERT_TYPE)
 
     elif str(alert_type.group(0)) == 'firewall':
-        print('[*] DEBUG: firewall')
+        currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print('[' + currentTime + '] [*] DEBUG: firewall')
         ALERT_TYPE = 'firewall'
         OPERATION_TYPE = str(operation_type.group(3)).strip()
         return (PROJECT_NAME, ALERT_THRESHOLD, OPERATION_TYPE, ALERT_TYPE)
 
     elif str(alert_type.group(0)) == 'serviceAccount':
-        print('[*] DEBUG: serviceAccount')
+        currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print('[' + currentTime + '] [*] DEBUG: serviceAccount')
         serviceAccount_operation = re.search(SERVICEACCOUNT_REGEX,message_text)
         ALERT_TYPE = str(serviceAccount_operation.group(3)).strip()
         OPERATION_TYPE = 'null'
         return (PROJECT_NAME, ALERT_THRESHOLD, OPERATION_TYPE, ALERT_TYPE)
+
+    elif str(alert_type.group(0)) == 'instanceSetTag':
+        currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print('[' + currentTime + '] [*] DEBUG: instanceSetTag')
+        ALERT_TYPE = 'instanceSetTag'
+        OPERATION_TYPE = 'null'
+        return (PROJECT_NAME, ALERT_THRESHOLD, OPERATION_TYPE, ALERT_TYPE)
+
+    elif str(alert_type.group(0)) == 'instanceAddAccessConfig':
+        currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print('[' + currentTime + '] [*] DEBUG: instanceAddAccessConfig')
+        ALERT_TYPE = 'instanceAddAccessConfig'
+        OPERATION_TYPE = 'null'
+        return (PROJECT_NAME, ALERT_THRESHOLD, OPERATION_TYPE, ALERT_TYPE)
+
+
 
     return (PROJECT_NAME, ALERT_THRESHOLD, OPERATION_TYPE)
 
@@ -111,7 +135,9 @@ def handle_os_command(command,msg_timestamp,channel):
     elif command.startswith(SERVICEACCONT_IDENTIFY_COMMAND):
         response = f_serviceAccount.serviceAccount_identify_command(command)
     elif command.startswith(HELP_COMMAND):
-        response = f_operations.dollhouse_bot_help()  
+        response = f_operations.dollhouse_bot_help() 
+    elif command.startswith(WHAT_IS_COMMAND):
+        response = f_firewall.what_is_command(command, running_account) 
         
     # Sends the response back to the channel
     slack_client.api_call("chat.postMessage", channel=slack_channel, thread_ts = msg_timestamp, text = response)
@@ -134,7 +160,8 @@ def get_operations(project_name, NUM_OF_INCIDENTS, operation_type, alert_type):
             if operation_type == 'insert' or operation_type == 'patch':
                 firewallRules = os.popen("gcloud compute firewall-rules describe " + firewall + " --format=json").read()
                 print "+++++++++++++++++++++++.  DEBUG  ++++++++++++++++++++++++++"
-                print('[*] DEBUG: ' + str(type(firewallRules)))
+                currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                print('[' + currentTime + '] [*] DEBUG: ' + str(type(firewallRules)))
                 print firewallRules
                 print "+++++++++++++++++++++++.  DEBUG  ++++++++++++++++++++++++++"
 
@@ -152,11 +179,13 @@ def get_operations(project_name, NUM_OF_INCIDENTS, operation_type, alert_type):
 
                 whitelisted_firewall = f_firewall.check_whitelisted_ports(ports_list)
                 if whitelisted_firewall == False:
-                    print("[*] DEBUG: Port " + str(ports_list) + " is not whitelisted")
+                    currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    print('[' + currentTime + '] [*] DEBUG: Port ' + str(ports_list) + ' is not whitelisted')
         
                     is_private = f_firewall.check_IP_private(source)
                     if is_private == False:
-                        print("[*] DEBUG: IP " + source + " is public")
+                        currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        print('[' + currentTime + '] [*] DEBUG: IP ' + source + ' is public')
                         # send alert to slack
                         f_slackHelper.firewall_insert_slack(created_by,operation_type,firewall_name,project_name,str(allowed),str(source))
                         # push to ES
@@ -164,10 +193,12 @@ def get_operations(project_name, NUM_OF_INCIDENTS, operation_type, alert_type):
                         es.index(index='dollhouse', doc_type='alert_firewall', body=json_firewall_body)
 
                     else: 
-                        print("[*] DEBUG:  IP " + source + " is private")
+                        currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        print('[' + currentTime + '] [*] DEBUG:  IP ' + source + ' is private')
                         continue
                 else:
-                    print("[*] DEBUG: Port " + str(ports_list) + " is whitelisted")
+                    currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    print('[' + currentTime + '] [*] DEBUG: Port ' + str(ports_list) + ' is whitelisted')
 
             elif operation_type == 'delete':
                 deleted_by = json_operation_desc.get('user')
@@ -186,7 +217,8 @@ def get_operations(project_name, NUM_OF_INCIDENTS, operation_type, alert_type):
                     json_firewall_body = f_operations.firewall_toES(deleted_by,'delete',firewall_name,project_name,'','',now_strftime)
                     es.index(index='dollhouse', doc_type='alert_firewall', body=json_firewall_body)
                 else:
-                    print("[*] DEBUG: " + firewall_name + " alert is suppressed")
+                    currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    print('[' + currentTime + '] [*] DEBUG: ' + firewall_name + ' alert is suppressed')
 
     
     elif alert_type == 'iamrole':
@@ -204,18 +236,21 @@ def get_operations(project_name, NUM_OF_INCIDENTS, operation_type, alert_type):
                 role =  str(actions.get('role'))
                 blacklisted_role = f_iam.check_blacklisted_roles(role)
                 if blacklisted_role == True:
-                    print("[*] DEBUG: Role " + role + " is blacklisted")
+                    currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    print("[" + currentTime + "] [*] DEBUG: Role " + role + " is blacklisted")
                     #send to slack
                     f_slackHelper.iamrole_slack(principalEmail,action,member,project_name,role)
                     # Push to Elasticsearch
                     json_iam = f_operations.iam_toES(principalEmail,action,member,project_name,role,now_strftime)
                     es.index(index='dollhouse', doc_type='alert_IAM', body=json_iam)
                 else:
-                    print("[*] DEBUG: Role " + role + " is not blacklisted")
+                    currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    print("[" + currentTime + "] [*] DEBUG: Role " + role + " is not blacklisted")
 
 
     elif alert_type == 'createKey':
-        print('[*] DEBUG: createKey')
+        currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print('[' + currentTime + '] [*] DEBUG: createKey')
         raw_operations = os.popen("gcloud logging read \"resource.type=\"service_account\" AND protoPayload.serviceName=\"iam.googleapis.com\" AND protoPayload.methodName=\"google.iam.admin.v1.CreateServiceAccountKey\"\" --format=json --limit="+str(NUM_OF_INCIDENTS)).read()
         json_raw_operations = json.loads(raw_operations)
 
@@ -231,7 +266,8 @@ def get_operations(project_name, NUM_OF_INCIDENTS, operation_type, alert_type):
 
 
     elif alert_type == 'deleteKey':
-        print('[*] DEBUG: deleteKey')
+        currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print("[" + currentTime + "] [*] DEBUG: deleteKey")
         #raw_operations = f_operations.get_deleteKey_raw_operations(NUM_OF_INCIDENTS)
         raw_operations = os.popen("gcloud logging read \"resource.type=\"service_account\" AND protoPayload.serviceName=\"iam.googleapis.com\" AND protoPayload.methodName=\"google.iam.admin.v1.DeleteServiceAccountKey\"\" --format=json --limit="+str(NUM_OF_INCIDENTS)).read()
         json_raw_operations = json.loads(raw_operations)
@@ -244,6 +280,58 @@ def get_operations(project_name, NUM_OF_INCIDENTS, operation_type, alert_type):
             #Push to Elasticsearch
             json_key = f_operations.key_toES(principalEmail,'delete',accountName,project_name,now_strftime)
             es.index(index='dollhouse', doc_type='alert_serviceAccount', body=json_key)
+
+    elif alert_type == 'instanceSetTag':
+        currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print("[" + currentTime + "] [*] DEBUG: instanceSetTag")
+        
+        raw_operations = os.popen("gcloud logging read \"resource.type=\"gce_instance\" AND protoPayload.response.operationType=\"setTags\" AND protoPayload.serviceName=\"compute.googleapis.com\" AND protoPayload.methodName=\"v1.compute.instances.setTags\"\" --format=json --limit="+str(NUM_OF_INCIDENTS)).read()
+        json_operations = json.loads(raw_operations)
+
+        principalEmail = str(json_operations[0].get('protoPayload').get('authenticationInfo').get('principalEmail'))
+        resourceName = str(json_operations[0].get('protoPayload').get('resourceName')).split('/')[-1]
+        list_tags = json_operations[0].get('protoPayload').get('request').get('tags')
+        temp_list = []
+        for i in list_tags:
+            temp_list.append(str(i))
+        # send alert to slack
+        f_slackHelper.instanceSetTag_slack(principalEmail,resourceName,str(temp_list), project_name)
+        # Push to Elasticsearch
+        json_instanceSetTag = f_operations.instanceSetTag_toES(principalEmail,resourceName,list_tags,project_name)
+        es.index(index='dollhouse', doc_type='alert_instanceSetTag', body=json_instanceSetTag)
+
+    elif alert_type == 'instanceAddAccessConfig':
+        currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print("[" + currentTime + "] [*] DEBUG: instanceAddAccessConfig")
+
+        raw_operations = os.popen("gcloud logging read \"resource.type=\"gce_instance\" AND jsonPayload.event_subtype=\"compute.instances.addAccessConfig\" AND jsonPayload.event_type=\"GCE_OPERATION_DONE\"\" --format=json --limit="+str(NUM_OF_INCIDENTS)).read()
+        json_operations = json.loads(raw_operations)
+
+        user = str(json_operations[0].get('jsonPayload').get('actor').get('user'))
+        resourceName = str(json_operations[0].get('jsonPayload').get('resource').get('name'))
+        public_ip = f_operations.check_public_ip(resourceName, project_name)
+        
+        if public_ip is not '':
+            # get network tags
+            # import pdb
+            # pdb.set_trace()
+            json_operations = json.loads(os.popen('gcloud compute instances describe ' + resourceName + ' --format=json').read())
+            list_tags = json_operations.get('tags').get('items')
+            temp_list = []
+            if list_tags:
+                for i in list_tags:
+                    temp_list.append(str(i))
+            # send alert to slack
+            f_slackHelper.instanceAddAccessConfig_slack(user,resourceName,project_name,temp_list,public_ip)
+            # Push to Elasticsearch
+            json_instanceAddAccessConfig = f_operations.instanceAddAccessConfig_toES(user,resourceName,public_ip, now_strftime,project_name)
+        else:
+            pass
+
+
+
+
+
 
 if __name__ == "__main__":
     os.system("gcloud config set account " + running_account)

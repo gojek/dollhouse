@@ -1,6 +1,8 @@
 from netaddr import IPAddress
 from utils.config import get_value
 import os
+import json
+import datetime
 
 def check_IP_private(source):
     counter = 0
@@ -64,8 +66,30 @@ def check_whitelisted_ports(ports_list):
     return rval
 
 def firewall_describe_command(command,running_account):
-    print "Firewall describe command found"
+    currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print('[' + currentTime + '] [*] DEBUG: Firewall describe command found')
     response = os.popen("python dollhouse-audit.py --account " + running_account + " --firewall --project "+ command.split()[4] + " --firewall_name " + command.split()[2]).read()
     return response
 
+def what_is_command(command,running_account):
+    currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print('[' + currentTime + '] [*] DEBUG: WHAT IS command found')
+    response = ''
+    check_existence = os.popen("gcloud compute firewall-rules list --format=json | grep " + command.split()[3]).read()
+    if check_existence is not '':
+        tmp_json = os.popen('gcloud compute firewall-rules list --format=json').read()
+        tmp_json = json.loads(tmp_json)
 
+        for i in tmp_json:
+            try:
+                if str(i['targetTags'][0]) == str(command.split()[3]):
+                    response = str(i['name'])
+            except:
+                pass
+
+    if response == '':
+        response = '*' + str(command.split()[3]) + '* is not a firewall tag'
+        return response
+    else:
+        response = '@dollhouse describe ' + str(command.split()[3]) + ' in ' + str(command.split()[5])
+        return firewall_describe_command(response,running_account)
