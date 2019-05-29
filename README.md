@@ -1,7 +1,7 @@
 # Dollhouse
 
-Dollhouse is a tool to audit Google Cloud Platform (GCP). As there are many components in GCP, dollhouse aims to be the one tool that can audit the whole platform for you.
-It can be used by Security Engineers and DevOps engineers to monitor the whole organization infrastucture. Dollhouse is also able to send alerts based on pre-configured events.
+Dollhouse does Incident response and audit on Google Cloud Platform (GCP). As there are many components in GCP, dollhouse aims to be the one tool that can audit the whole platform and give almost real-time alerts to you.
+It can be used by Security Engineers and DevOps engineers to monitor the whole organization infrastucture. Dollhouse can also send alerts based on pre-configured events.
 
 ### High Level Architecture
 ![dollhouse_architecture](img/dollhouse-architecture.jpg "architecture")
@@ -12,10 +12,13 @@ It can be used by Security Engineers and DevOps engineers to monitor the whole o
 - [x] Firewall Rules 
 - [x] IAM Roles 
 - [x] Service Accounts 
+- [x] Google Cloud Storage 
 
 ### Requirements
 ------------------------------
-- Account with viewer access on Google Cloud
+- An IAM account with Org level permissions :
+  - roles/iam.securityReviewer
+  - Viewer
 - `pip install requirements-audit.txt`
 
 ### Usage
@@ -37,8 +40,6 @@ optional arguments:
   --firewall_name FIREWALL_NAME         query specific firewall name
 ```
 
-To run the audit, you can choose what you want to check (Firewall, IAM) by adding the required arguments
-This script can be run on your local machine with your own user. It will fetch the projects that your account has access to. Ideally you should create an account/serviceaccount which has organisation level viewer access so that it becomes easier to run on all the projects.
 ```
 python dollhouse-audit.py --account youremail@email.com --firewall --iam
 ```
@@ -55,7 +56,7 @@ python dollhouse-audit.py --account myName@email.com --firewall --iam --ES 127.0
 ------------------------------
 
 
-# Dollhouse-bot
+# Dollhouse-Bot
 
 Dollhouse-bot is a slack bot which gives instant alerts on slack to custom events that you have set. This bot leverages Google Stackdriver Logging & Monitoring to check for events in a GCP Project. 
 
@@ -135,8 +136,8 @@ To run dollhouse-bot, you can simply do
 ### Authors
 ------------------------------
 
-* **Fahri Shihab**
-* **Sanjog Panda**
+* [Fahri Shihab](https://github.com/fahrishb)
+* [Sanjog Panda](https://github.com/sanjogpandasp)
 
 ### Credits
 ------------------------------
@@ -146,5 +147,5 @@ To run dollhouse-bot, you can simply do
 ------------------------------
 
 - [ ] We continuously trying to improve on the code quality of the tool to make it more modular and maintainable.
-- [ ] Adding support on *GCS bucket* 
+- [ ] Incident Response on *GCS bucket* 
 - [ ] Whitelisting/Blacklisting alert rules from slack
