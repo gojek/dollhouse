@@ -238,7 +238,11 @@ def get_operations(project_name, NUM_OF_INCIDENTS, operation_type, alert_type):
                 member = str(actions.get('member'))
                 role =  str(actions.get('role'))
                 blacklisted_role = f_iam.check_blacklisted_roles(role)
-                if blacklisted_role == True:
+                whitelisted_domain = f_iam.check_whitelisted_domain(member)
+
+                # If the domain is not whitelisted (name@personalMail.com)
+                # Alert this
+                if whitelisted_domain == False
                     currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     print("[" + currentTime + "] [*] DEBUG: Role " + role + " is blacklisted")
                     #send to slack
@@ -246,9 +250,20 @@ def get_operations(project_name, NUM_OF_INCIDENTS, operation_type, alert_type):
                     # Push to Elasticsearch
                     json_iam = f_operations.iam_toES(principalEmail,action,member,project_name,role,now_strftime)
                     es.index(index='dollhouse', doc_type='alert_IAM', body=json_iam)
-                else:
-                    currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    print("[" + currentTime + "] [*] DEBUG: Role " + role + " is not blacklisted")
+                    
+                else: # the domain is part of the whitelisted domain
+                    if blacklisted_role == True:
+                        currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        print("[" + currentTime + "] [*] DEBUG: Role " + role + " is blacklisted")
+                        #send to slack
+                        f_slackHelper.iamrole_slack(principalEmail,action,member,project_name,role)
+                        # Push to Elasticsearch
+                        json_iam = f_operations.iam_toES(principalEmail,action,member,project_name,role,now_strftime)
+                        es.index(index='dollhouse', doc_type='alert_IAM', body=json_iam)
+                    else:
+                        currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        print("[" + currentTime + "] [*] DEBUG: Role " + role + " is not blacklisted")
+
 
 
     elif alert_type == 'createKey':
