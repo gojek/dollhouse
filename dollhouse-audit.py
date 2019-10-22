@@ -337,6 +337,7 @@ def audit_storage(project_name):
 			to_es['project_name'] = project_name
 			to_es['bucket_name'] = bucket_name
 			to_es['logging_status'] = logging_status
+			to_es['scan_time'] = now_strftime
 			es.index(index='dollhouse',doc_type='dollhouse_bucket', body=to_es)
 
 		list_to_tabulate = f_storage.get_bucket_iam(bucket_name)
@@ -346,6 +347,7 @@ def audit_storage(project_name):
 				to_es['project_name'] = project_name
 				to_es['bucket_name'] = bucket_name
 				to_es['logging_status'] = logging_status
+				to_es['scan_time'] = now_strftime
 				to_es['role'] = item[0]
 				to_es['user'] = item[1]
 				es.index(index='dollhouse',doc_type='dollhouse_bucket', body=to_es)
