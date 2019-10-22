@@ -338,7 +338,7 @@ def get_operations(project_name, NUM_OF_INCIDENTS, operation_type, alert_type):
 
 if __name__ == "__main__":
     os.system("gcloud config set account " + running_account)
-    if slack_client.rtm_connect(with_team_state=False):
+    if slack_client.rtm_connect(auto_reconnect=True):
         print("dollhouse-bot connected and running!")
  
         while True:
