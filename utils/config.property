@@ -28,5 +28,5 @@ ports =tcp80,tcp443,tcp10256,udp5
 roles = roles/admin,roles/owner
 
 
-[whitelistedDomain]
+[whitelistedDomains]
 domains = go-jek.com,go-pay.co.id

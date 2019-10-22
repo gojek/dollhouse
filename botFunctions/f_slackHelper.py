@@ -52,3 +52,8 @@ def instanceAddAccessConfig_slack(user,resourceName,project_name,list_tags,publi
     currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print('[' + currentTime + '] [*] DEBUG: slack alert sent')
     slack_client.api_call("chat.postMessage", channel=slack_channel, text = "*"+user+"* has just *Added Access Config* for *"+resourceName+"* in project *"+project_name+ "* with *Public IP: " + str(public_ip) + "*. Network Tags are *" + str(list_tags) + "*")
+
+def newProjects_slack(diff):
+    currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print('[' + currentTime + '] [*] DEBUG: slack alert sent')
+    slack_client.api_call("chat.postMessage", channel=slack_channel, text = '*New Google Cloud Projects* ```' + str(diff) + '```')
