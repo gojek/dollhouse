@@ -74,6 +74,7 @@ def firewall_describe_command(command,running_account):
 def what_is_command(command,running_account):
     currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print('[' + currentTime + '] [*] DEBUG: WHAT IS command found')
+    os.system("gcloud config set project " + str(command.split()[5]))
     response = ''
     check_existence = os.popen("gcloud compute firewall-rules list --format=json | grep " + command.split()[3]).read()
     if check_existence is not '':
