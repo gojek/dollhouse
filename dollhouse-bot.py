@@ -174,8 +174,11 @@ def get_operations(project_name, NUM_OF_INCIDENTS, operation_type, alert_type):
                 
                 ports_list = []
                 for methods in json_firewallRules['allowed']:
-                    for ports in methods['ports']:
-                        ports_list.append(str(methods['IPProtocol']) + str(ports))
+                    if str(methods['IPProtocol']) == 'all':
+                        ports_list.append(str(methods['IPProtocol']) + 'all')
+                    else:
+                        for ports in methods['ports']:
+                            ports_list.append(str(methods['IPProtocol']) + str(ports))
 
                 whitelisted_firewall = f_firewall.check_whitelisted_ports(ports_list)
                 if whitelisted_firewall == False:
