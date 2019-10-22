@@ -242,7 +242,7 @@ def get_operations(project_name, NUM_OF_INCIDENTS, operation_type, alert_type):
 
                 # If the domain is not whitelisted (name@personalMail.com)
                 # Alert this
-                if whitelisted_domain == False
+                if whitelisted_domain == False:
                     currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     print("[" + currentTime + "] [*] DEBUG: Domain for " + member + " is blacklisted")
                     #send to slack

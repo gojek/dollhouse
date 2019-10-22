@@ -12,13 +12,14 @@ def check_blacklisted_roles(role):
             #return False #Role is not blacklisted
 
 def check_whitelisted_domain(email):
-    whitelisted_domain_list = get_value('whitelistedDomains','domains')
+    finalStatus = False
+    whitelisted_domain_list = ['go-jek.com','go-pay.co.id','aux.go-jek.com', 'gserviceaccount.com']
     whitelisted_domain_list = whitelisted_domain_list.split(',')
-    for domain in whitelisted_domain_list:
-        if email.split('@')[1].lower() == domain: #domain is whitelisted, its ok to not alert
-            continue
-        else: #alert
-            return False
+    status = [email.endswith(item) for item in whitelisted_domain_list]
+    if True in status:
+        finalStatus = True
+    return finalStatus
+
 
 def iam_show_command(command):
     print "IAM command show found"
