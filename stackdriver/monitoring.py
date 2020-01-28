@@ -351,5 +351,75 @@ def instanceAddAccessConfig(project_name, channelID):
 	os.system("gcloud alpha monitoring policies create --policy-from-file=./instanceAddAccessConfig.json")
 	os.system("rm ./instanceAddAccessConfig.json")
 
+def k8AnonymousCreate(project_name, channelID):
+	k8AnonymousCreate = {
+		  "displayName": "k8AnonymousCreate",
+		  "combiner": "OR",
+		  "conditions": [
+			{
+			  "displayName": "Metric Threshold on Log Metrics",
+			  "conditionThreshold": {
+				 "aggregations": [
+				   {
+					 "alignmentPeriod": "60s",
+					 "perSeriesAligner": "ALIGN_RATE",
+				   }],
+				"comparison": "COMPARISON_GT",
+				"duration": "60s",
+				"filter": "metric.type=\"logging.googleapis.com/user/alert-k8anonymousAccess-create\" AND resource.type=\"k8s_cluster\"",
+				"thresholdValue": 0,
+				"trigger": {
+				  "count": 1
+				 }
+			  }
+			}
+		  ],
+		  "notificationChannels": [
+			  "projects/"+project_name+"/notificationChannels/"+channelID
+		  ]
+		}
+
+	f = open("k8AnonymousCreate.json", "w")
+	f.write(json.dumps(k8AnonymousCreate))
+	f.close()
+
+	os.system("gcloud alpha monitoring policies create --policy-from-file=./k8AnonymousCreate.json")
+	os.system("rm ./k8AnonymousCreate.json")
+
+def k8AnonymousPatch(project_name, channelID):
+	k8AnonymousPatch = {
+		  "displayName": "k8AnonymousPatch",
+		  "combiner": "OR",
+		  "conditions": [
+			{
+			  "displayName": "Metric Threshold on Log Metrics",
+			  "conditionThreshold": {
+				 "aggregations": [
+				   {
+					 "alignmentPeriod": "60s",
+					 "perSeriesAligner": "ALIGN_RATE",
+				   }],
+				"comparison": "COMPARISON_GT",
+				"duration": "60s",
+				"filter": "metric.type=\"logging.googleapis.com/user/alert-k8anonymousAccess-patch\" AND resource.type=\"k8s_cluster\"",
+				"thresholdValue": 0,
+				"trigger": {
+				  "count": 1
+				 }
+			  }
+			}
+		  ],
+		  "notificationChannels": [
+			  "projects/"+project_name+"/notificationChannels/"+channelID
+		  ]
+		}
+
+	f = open("k8AnonymousPatch.json", "w")
+	f.write(json.dumps(k8AnonymousPatch))
+	f.close()
+
+	os.system("gcloud alpha monitoring policies create --policy-from-file=./k8AnonymousPatch.json")
+	os.system("rm ./k8AnonymousPatch.json")
+
 def create_slack():
     os.system("gcloud alpha monitoring channels create --channel-content-from-file=./slack_notification.json")

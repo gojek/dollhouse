@@ -57,3 +57,14 @@ def newProjects_slack(diff):
     currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print('[' + currentTime + '] [*] DEBUG: slack alert sent')
     slack_client.api_call("chat.postMessage", channel=slack_channel, text = '*New Google Cloud Projects* ```' + str(diff) + '```')
+
+def k8Anonymous_create_slack(principalEmail,bindingName,access,project_name,role,cluster_name):
+    currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print('[' + currentTime + '] [*] DEBUG: slack alert sent')
+    slack_client.api_call("chat.postMessage", channel=slack_channel, text = "*"+principalEmail+"* has just *CREATED* a cluster binding: *"+bindingName+"* given to *"+access+ "* on cluster *"+cluster_name+"* in project *"+project_name+"* with role *"+role+"*")
+
+def k8Anonymous_patch_slack(principalEmail,bindingName,access,project_name,role,cluster_name):
+    currentTime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print('[' + currentTime + '] [*] DEBUG: slack alert sent')
+    slack_client.api_call("chat.postMessage", channel=slack_channel, text = "*"+principalEmail+"* has just *UPDATED* a cluster binding: *"+bindingName+"* given to *"+access+ "* on cluster *"+cluster_name+"* in project *"+project_name+"* with role *"+role+"*")
+

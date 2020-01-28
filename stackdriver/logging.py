@@ -64,3 +64,12 @@ def createLoggingInstance():
                 --log-filter="resource.type= \"gce_instance\" AND\
                     jsonPayload.event_subtype=\"compute.instances.addAccessConfig\" AND\
                     jsonPayload.event_type=\"GCE_OPERATION_DONE\""')
+
+
+def createLoggingK8AnonymousAccess():
+    # create K8 annonymous request insert access to a user
+    os.system('gcloud beta logging metrics create alert-k8anonymousAccess-create --description="this alerts if there is creation of anonymous access on k8 cluster" --log-filter=\'resource.type="k8s_cluster" AND protoPayload.response.subjects.name="system:anonymous" AND (protoPayload.methodName="io.k8s.authorization.rbac.v1.clusterrolebindings.create" OR protoPayload.authorizationInfo.permission="io.k8s.authorization.rbac.v1beta1.clusterrolebindings.create")\'')
+
+# create K8 annonymous request patch access to a user
+    os.system('gcloud beta logging metrics create alert-k8anonymousAccess-patch --description="this alerts if there is Updation of anonymous access on k8 cluster" --log-filter=\'resource.type="k8s_cluster" AND protoPayload.response.subjects.name="system:anonymous" AND (protoPayload.methodName="io.k8s.authorization.rbac.v1.clusterrolebindings.patch" OR protoPayload.authorizationInfo.permission="io.k8s.authorization.rbac.v1beta1.clusterrolebindings.patch")\'')
+

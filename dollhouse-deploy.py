@@ -17,6 +17,8 @@ parser.add_argument("--stackdriverfirewall", dest="stackdriverfirewall", help="d
 parser.add_argument("--stackdriverserviceAccount", dest="stackdriverserviceAccount", help="deploy service account stackdriver alerting policy", required=False, action='store_true')
 parser.add_argument("--stackdriveriam", dest="stackdriveriam", help="deploy iam role stackdriver alerting policy", required=False, action='store_true')
 parser.add_argument("--stackdriverinstance", dest="stackdriverinstance", help="deploy instance stackdriver alerting policy", required=False, action='store_true')
+parser.add_argument("--logk8anonymous", dest="logk8anonymous", help="write custom metrics on k8 anonymous access", required=False, action='store_true')
+parser.add_argument("--stackdriverk8anonymous", dest="stackdriverk8anonymous", help="deploy k8 anonymous request alerting policy", required=False, action='store_true')
 args = parser.parse_args()
 
 os.system("gcloud config set project " + args.projectName)
@@ -34,6 +36,9 @@ def create_custom_metric():
 
   if args.loginstance:
     logging.createLoggingInstance()
+
+  if args.logk8anonymous:
+    logging.createLoggingK8AnonymousAccess()
 
 def create_slack_notification(project_name, base_directory):
   if args.createslack:
@@ -61,6 +66,10 @@ def create_slack_notification(project_name, base_directory):
   if args.stackdriverinstance:
     monitoring.instanceSetTag(project_name, channelID)
     monitoring.instanceAddAccessConfig(project_name, channelID)
+
+  if args.stackdriverk8anonymous:
+    monitoring.k8AnonymousCreate(project_name,channelID)
+    monitoring.k8AnonymousPatch(project_name,channelID)
 
   print "[+] Dollhouse Deployment: Done "
 

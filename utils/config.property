@@ -14,7 +14,7 @@ COMMAND_REGEX = @dollhouse
 MENTION_REGEX = (is above the threshold of 0 with a value of)(.*[0-9]) 
 PROJECT_REGEX = (.+?(?=for))(for)(.+?(?=with)) 
 OPERATION_REGEX = (.+?(?=firewall))(firewall\-)(.+?(?=for))
-ALERT_TYPE_REGEX = (firewall|iamrole|serviceAccount)
+ALERT_TYPE_REGEX = (firewall|iamrole|serviceAccount|instanceSetTag|instanceAddAccessConfig|k8anonymousAccess)
 SERVICEACCOUNT_REGEX = (.+?(?=serviceAccount))(serviceAccount\-)(.+?(?=for))
 ONE_ALERT = 0.017
 SLACK_CHANNEL = <SLACK_CHANNEL>

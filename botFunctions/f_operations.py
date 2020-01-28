@@ -95,3 +95,15 @@ def instanceAddAccessConfig_toES(user,resourceName,public_ip, now_strftime,proje
     json_instanceAddAccessConfig['time'] = now_strftime
     json_instanceAddAccessConfig['project_name'] = project_name
     return json_instanceSetTag
+
+def k8anonymous_toES(principalEmail,bindingName,access,project_name,role,cluster_name,now_strftime):
+    json_k8anonymous = {}
+    json_k8anonymous['user'] = principalEmail
+    json_k8anonymous['binding'] = bindingName
+    json_k8anonymous['access'] = access
+    json_k8anonymous['time'] = now_strftime
+    json_k8anonymous['project_name'] = project_name
+    json_k8anonymous['role'] = role
+    json_k8anonymous['cluster_name'] = cluster_name
+    return json_k8anonymous
+
