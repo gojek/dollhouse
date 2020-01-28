@@ -24,8 +24,8 @@ def get_firewall_raw_operations(operation_type,project_name,NUM_OF_INCIDENTS):
     raw_operations = os.popen('gcloud compute operations list --filter="operationType='+operation_type+ ' AND targetLink=https://www.googleapis.com/compute/v1/projects/'+project_name+'/global/firewalls/" --sort-by ~TIMESTAMP | grep -m'+str(NUM_OF_INCIDENTS + 1)+' ""').read()
     return raw_operations
 
-def get_iam_raw_operations():
-    cmd = 'gcloud logging read "resource.type=project AND protoPayload.serviceName=cloudresourcemanager.googleapis.com AND protoPayload.methodName=SetIamPolicy" --format=json'
+def get_iam_raw_operations(NUM_OF_INCIDENTS):
+    cmd = 'gcloud logging read "resource.type=project AND protoPayload.serviceName=cloudresourcemanager.googleapis.com AND protoPayload.methodName=SetIamPolicy" --format=json --limit='+str(NUM_OF_INCIDENTS)
     o = os.popen(cmd,'r')
     raw_operations = o.read()
     return raw_operations
