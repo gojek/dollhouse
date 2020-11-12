@@ -9,7 +9,7 @@ We appreciate pull requests; here are our guidelines:
     is going to be large it might be a good idea to get the
     discussion started early.  We are happy to discuss it in a
     new issue beforehand, and you can always email
-    <security@go-jek.com> about future work.
+    <security@gojek.com> about future work.
 
 2.  Please use [Google Python Guideline][3].
 3.  We ask that you squash all the commits together before
@@ -32,7 +32,7 @@ We appreciate pull requests; here are our guidelines:
 
 Much Thanks! ❤❤❤
 
-GO-JEK Tech
+Gojek Tech
 
 [1]: http://www.apache.org/licenses/LICENSE-2.0
 [2]: https://github.com/gojektech/dollhouse/issues

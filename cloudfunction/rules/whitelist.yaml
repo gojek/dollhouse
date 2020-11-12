@@ -1,0 +1,10 @@
+firewall:
+    - tcp 80
+    - tcp 443
+iam:
+    - roles/accessapproval.approver
+    - roles/accessapproval.configEditor
+bucket:
+    - buckets/foo/objects/*
+    - buckets/foo/*
+    - buckets/foo/objects/bar/*
