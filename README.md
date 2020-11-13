@@ -77,6 +77,7 @@ Now for this part, it is essential to have organization access or you can also a
 
     ```
     gcloud functions deploy dollhouse-cf  \
+        --project=<YOUR_PROJECT> \
         --entry-point=receive_request \
         --runtime=python37 \
         --trigger-topic=dollhouse-topic  \
