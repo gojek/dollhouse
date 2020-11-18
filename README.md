@@ -82,7 +82,7 @@ Now for this part, it is essential to have organization access or you can also a
         --runtime=python37 \
         --trigger-topic=dollhouse-topic  \
         --service-account=security-dollhouse@<YOUR_PROJECT>.iam.gserviceaccount.com \
-        --set-env-vars SLACK_TOKEN=SLACK_TOKEN,SLACK_CHANNEL=SLACK_CHANNEL \
+        --set-env-vars SLACK_TOKEN=SLACK_TOKEN \
         --region=asia-east2
     ```
 - #### Server Deployment
