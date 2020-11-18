@@ -1,6 +1,11 @@
 import os
 import base64
 import json
+import google
+import requests as req
+from google.auth.transport import requests
+import pathlib
+import yaml
 
 # for running in cloud function use these imports
 from rules.firewall_insert import firewall_insert
@@ -28,10 +33,33 @@ from rules.storage_allusers import storage_allusers
 # from cloudfunction.rules.iam_changes import iam_changes
 # from cloudfunction.rules.storage_allusers import storage_allusers
 
+current_directory = str(pathlib.Path(__file__).parent.absolute())
+with open(current_directory + "/config.yaml","r") as config_file:
+	cfg = yaml.safe_load(config_file)
 
+CREDENTIAL_SCOPES = ["https://www.googleapis.com/auth/cloud-platform"] 
+slack_token 	= os.environ['SLACK_TOKEN']
 token 	= os.environ['SLACK_TOKEN']
 url 	= 'https://slack.com/api/chat.postMessage'
-channel = os.environ['SLACK_CHANNEL']
+
+def get_default_token():
+  credentials, project_id = google.auth.default(scopes=CREDENTIAL_SCOPES)
+  credentials.refresh(requests.Request())
+  return credentials.token
+
+def get_organization(gcp_token, project_name):
+	url = f"https://cloudresourcemanager.googleapis.com/v1/projects/{project_name}:getAncestry"
+	headers = {"Authorization":f"Bearer {gcp_token}", "Content-type":"application/json; charset=utf-8"}
+	r = req.post(url=url, headers=headers)
+	resp = json.loads(r.content)
+	try:
+		for i in resp['ancestor']:
+			if i['resourceId']['type'] == 'organization':
+				organization = i['resourceId']['id']
+				return organization
+	except:
+		print(f'No organization found for project {project_name}')
+		return 'None'
 
 def receive_request(event, context):
 	"""Triggered from a message on a Cloud Pub/Sub topic.
@@ -46,10 +74,15 @@ def receive_request(event, context):
 def parse_message(message):
 
 	message = json.loads(message)
+	project_id = message['resource']['labels']['project_id']
+	gcp_token = get_default_token()
+	organization = get_organization(gcp_token, project_id)
+	channel = cfg[f"org_{organization}"]
+
 	# Firewall Insert
 	try:
 		if (message.get('resource').get('type')=='gce_firewall_rule') and (message.get('protoPayload').get('authorizationInfo')[0].get('resourceAttributes').get('type')=='compute.firewalls') and ('compute.firewalls.insert' in message.get('protoPayload').get('methodName')) :
-			firewall_insert(message, token, url, channel)
+			firewall_insert(message, slack_token, url, channel)
 			print('Firewall Insert')
 	except:
 		pass
@@ -57,7 +90,7 @@ def parse_message(message):
 	# Firewall Patch
 	try:
 		if (message.get('resource').get('type')=='gce_firewall_rule') and (message.get('protoPayload').get('authorizationInfo')[0].get('resourceAttributes').get('type')=='compute.firewalls') and ('compute.firewalls.patch' in message.get('protoPayload').get('methodName')) :
-			firewall_patch(message, token, url, channel)
+			firewall_patch(message, slack_token, url, channel)
 			print('Firewall Patch')
 	except:
 		pass
@@ -65,7 +98,7 @@ def parse_message(message):
 	# Firewall Delete
 	try:
 		if (message.get('resource').get('type')=='gce_firewall_rule') and (message.get('protoPayload').get('authorizationInfo')[0].get('resourceAttributes').get('type')=='compute.firewalls') and ('compute.firewalls.delete' in message.get('protoPayload').get('methodName')) :
-			firewall_delete(message, token, url, channel)
+			firewall_delete(message, slack_token, url, channel)
 			print('Firewall Delete')
 	except:
 		pass
@@ -73,7 +106,7 @@ def parse_message(message):
 	# Service Account Create Key
 	try:
 		if (message.get('resource').get('type')=='service_account') and ('CreateServiceAccountKey' in message.get('protoPayload').get('methodName')) :
-			service_account_create_key(message, token, url, channel)
+			service_account_create_key(message, slack_token, url, channel)
 			print('Service Account CreateKey')
 	except:
 		pass
@@ -81,7 +114,7 @@ def parse_message(message):
 	# Service Account Delete Key
 	try:
 		if (message.get('resource').get('type')=='service_account') and ('DeleteServiceAccountKey' in message.get('protoPayload').get('methodName')) :
-			service_account_delete_key(message, token, url, channel)
+			service_account_delete_key(message, slack_token, url, channel)
 			print('Service Account DeleteKey')
 	except:
 		pass
@@ -89,7 +122,7 @@ def parse_message(message):
 	# GCE Instance Set Tags
 	try:
 		if (message.get('resource').get('type')=='gce_instance') and ('compute.instances.setTags' in message.get('protoPayload').get('methodName')) and (message.get('operation').get('first')==True) :
-			gce_instance_set_tags(message, token, url, channel)
+			gce_instance_set_tags(message, slack_token, url, channel)
 			print('GCE Instance Set Tags')
 	except:
 		pass
@@ -97,7 +130,7 @@ def parse_message(message):
 	# GCE Instance Add Access Config
 	try:
 		if (message.get('resource').get('type')=='gce_instance') and ('compute.instances.addAccessConfig' in message.get('jsonPayload').get('event_subtype')) and (message.get('jsonPayload').get('event_type')=='GCE_OPERATION_DONE') :
-			gce_instance_add_access_config(message, token, url, channel)
+			gce_instance_add_access_config(message, slack_token, url, channel)
 			print('GCE Instance Add Access Config')
 	except:
 		pass
@@ -107,7 +140,7 @@ def parse_message(message):
 		subjects = message.get('protoPayload').get('response').get('subjects')
 		system_anonymous = ["system:anonymous" in subject['name'] for subject in subjects]
 		if (message.get('resource').get('type')=="k8s_cluster" and (True in system_anonymous) and (('clusterrolebindings.create' in message.get('protoPayload').get('methodName')) or ('clusterrolebindings.patch' in message.get('protoPayload').get('methodName'))) ):
-			k8s_anonymous_access(message, token, url, channel)
+			k8s_anonymous_access(message, slack_token, url, channel)
 			print('Kubernetes Role Binding System Anonymous')
 	except:
 		pass
@@ -115,7 +148,7 @@ def parse_message(message):
 	# Kubernetes Public Cluster
 	try:
 		if (message.get('resource').get('type')=="gke_cluster" and ('ClusterManager.CreateCluster' in message.get('protoPayload').get('methodName')) ):
-			k8s_public_cluster(message, token, url, channel)
+			k8s_public_cluster(message, slack_token, url, channel)
 			print('Kubernetes Public Cluster')
 	except:
 		pass
@@ -123,7 +156,7 @@ def parse_message(message):
 	# IAM Changes
 	try:
 		if ( (message.get('resource').get('type')=="project" and (message.get('protoPayload').get('methodName'))=='SetIamPolicy') and len(message.get('protoPayload').get('serviceData').get('policyDelta').get('bindingDeltas')) ) > 0:
-			iam_changes(message, token, url, channel)
+			iam_changes(message, slack_token, url, channel)
 			print('IAM Changes')
 	except:
 		pass
@@ -133,7 +166,7 @@ def parse_message(message):
 		members = message.get('protoPayload').get('serviceData').get('policyDelta').get('bindingDeltas')
 		allUsers = ["allUsers" in member['member'] for member in members]
 		if (message.get('protoPayload').get('serviceName')=='storage.googleapis.com' and (True in allUsers)):
-			storage_allusers(message, token, url, channel)
+			storage_allusers(message, slack_token, url, channel)
 			print('Cloud Storage Permission Changes')
 	except:
 		pass
